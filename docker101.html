@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js - Markdown Example</title>
+
+		<link rel="stylesheet" href="../dist/reveal.css">
+		<link rel="stylesheet" href="../dist/theme/white.css" id="theme">
+
+        <link rel="stylesheet" href="../plugin/highlight/monokai.css">
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<div class="slides">
+				<section data-markdown class="center">
+					<script type="text/template">
+						# Docker 101
+					</script>
+				</section>
+
+				<section style="text-align: left">
+					<section>
+						<h2>Agenda</h2>
+						<ul>
+							<li>Docker Introduction</li>
+							<li>Concept</li>
+							<li>Network</li>
+							<li>Dockerfile</li>
+							<li>Orchestration</li>
+						</ul>
+					</section>
+				</section>
+
+				<section style="text-align: left">
+                    <section>
+                        <h2>Docker Introduction</h2>
+					</section>
+					<section style="text-align: center">
+						<h3 style="text-align: left">Docker vs VM</h3>
+						<img width="400" src="https://www.docker.com/sites/default/files/d8/2018-11/docker-containerized-appliction-blue-border_2.png">
+						<img width="400" src="https://www.docker.com/sites/default/files/d8/2018-11/container-vm-whatcontainer_2.png">
+					</section>
+					<section style="text-align: center">
+						<h3 style="text-align: left">Docker Engine</h3>
+						<img width="600" src="https://docs.docker.com/engine/images/engine-components-flow.png">
+					</section>
+					<section style="text-align: center">
+						<h3 style="text-align: left">Docker Architecture</h3>
+						<img width="600" src="https://docs.docker.com/engine/images/architecture.svg">
+					</section>
+					<section>
+						<h2>Docker slogan</h2>
+						<ul>
+							<li>Build, Ship and Run</li>
+							<li>Build once, Run anywhere</li>
+						</ul>
+					</section>
+                    <section>
+						<h3 style="text-align: left">Install Docker</h3>
+						<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers>
+							curl -fsSL https://get.docker.com -o get-docker.sh
+							sudo sh get-docker.sh
+							sudo usermode -aG docker your-user
+						</code></pre>
+					</section>
+
+
+<!--					<section style="text-align: center">-->
+<!--						<img width="810" src="https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/media/docker-on-linux.png">-->
+<!--					</section>-->
+				</section>
+
+				<section data-markdown class="center"  data-separator-vertical="---" style="text-align: left">
+					<script type="text/template">
+						## Concept
+						* Image
+						* Container
+						* Registery
+						---
+						### Image
+						* layers
+
+						![Sample image](https://docs.docker.com/storage/storagedriver/images/container-layers.jpg)
+						---
+						### Container
+						* Container is a process
+						* based on image, and create rw container layers
+						* container layer should be stateless
+                        ---
+						### Registry
+						* https://hub.docker.com/
+						* https://hub.agoralab.co/harbor/projects
+						---
+						### Image Related Command
+						* docker images
+						* docker rmi
+						* docker build
+						* docker commit
+						* docker tag
+						---
+						### Container Related Command
+						* docker run
+						* docker rm
+						* docker start
+						* docker stop
+						* docker kill
+						* docker ps
+						* docker exec
+						* docker inspect
+						---
+						### Registry Related Command
+						* docker login
+						* docker pull
+						* docker push
+						* docker search
+					</script>
+				</section>
+
+				<section data-markdown class="center"  data-separator-vertical="---" style="text-align: left">
+					<script type="text/template">
+						## Network
+						* none
+						* host
+						* bridge
+						* user-defined
+							* bridge
+							* overlay
+							* macvlan
+						---
+						### Host
+						docker run --network=host busybox
+
+						---
+						### Bridge
+						docker run -it busybox
+
+						![Sample image](https://raw.githubusercontent.com/yan3nian/blog_reference/master/Docker/bridge_network.png) <!-- .element height="400" -->
+						<!-- .element: style="text-align: center;" -->
+                        ---
+						### Container
+
+						* docker network create mybridge
+						<!-- .element: style="font-size: x-large;" -->
+						* docker run -d --net mybridge --name db redis
+						<!-- .element: style="font-size: x-large;" -->
+						* docker run -d --net mybridge -e DB=db -p 8000:5000 --name web chrch/web
+						<!-- .element: style="font-size: x-large;" -->
+
+						![Sample image](https://raw.githubusercontent.com/yan3nian/blog_reference/master/Docker/container_network.png)<!-- .element height="400" -->
+						<!-- .element: style="text-align: center;" -->
+					</script>
+				</section>
+
+				<section data-markdown class="center"  data-separator-vertical="---" style="text-align: left">
+					<script type="text/template">
+						## Dockerfile
+						A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image.
+                        ---
+						### Instruction
+						* FROM
+						* ADD
+						* COPY
+						* RUN
+						* ENV
+						* CMD
+						* ENTRYPOINT
+						* ARG
+						* EXPOSE
+						* WORKDIR
+                        ---
+						### Dockerfile Example
+						```dockerfile
+						FROM nvidia/cuda:10.1-devel-ubuntu14.04
+						ENV NVIDIA_DRIVER_CAPABILITIES=all
+						ENV NVIDIA_VISIBLE_DEVICES=all
+						ENV NVIDIA_REQUIRE_CUDA ""
+
+						RUN sed -i 's/archive.ubuntu.com/mirrors.cn99.com/g' /etc/apt/sources.list && \
+						    sed -i 's/security.ubuntu.com/mirrors.cn99.com/g' /etc/apt/sources.list && \
+						    apt-get update && \
+						    apt-get install -y build-essential gcc autoconf libtool make cmake \
+						    git zlib1g-dev liblzma-dev libgnutls28-dev libnuma-dev \
+						    psmisc python3-pip gdb wget vim yasm nasm pkg-config
+
+						ADD BullseyeCoverage-8.18.3 /tmp/BullseyeCoverage-8.18.3
+						RUN cd /tmp/BullseyeCoverage-8.18.3 && \
+						    ./install --prefix /usr/local --key 2QHCf82w2o0o2ZpCcI0iKOFu0oD5eG1MZ2aU
+
+						RUN git clone --depth 1 -b release-1.8.1 https://gitee.com/mirrors/googletest.git && \
+						    cd googletest && autoreconf -vfi && ./configure && make -j `nproc` && \
+						    cp -r ./googletest/include /usr/local/ && \
+						    cp -r ./googlemock/include /usr/local/ && \
+						    cp -d ./googletest/lib/.libs/libgtest.so* /usr/lib && \
+						    cp -d ./googlemock/lib/.libs/libgmock.so* /usr/lib && \
+						    cd - && rm -rf googletest
+
+						COPY ffmpeg-4.3-amd64-static/ffmpeg /usr/bin
+						COPY ffmpeg-4.3-amd64-static/ffprobe /usr/bin
+						```
+						---
+						### docker build
+
+						docker build -t mosaic_builder .
+						---
+						### Multi-Stage Build
+						```dockerfile
+						FROM golang:1.7.3 AS builder
+						WORKDIR /go/src/github.com/alexellis/href-counter/
+						RUN go get -d -v golang.org/x/net/html
+						COPY app.go    .
+						RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+
+						FROM alpine:latest
+						RUN apk --no-cache add ca-certificates
+						WORKDIR /root/
+						COPY --from=builder /go/src/github.com/alexellis/href-counter/app .
+						CMD ["./app"]
+						```
+					</script>
+				</section>
+				<section data-markdown class="center"  data-separator-vertical="---" style="text-align: left">
+					<script type="text/template">
+						## Container Orchestration
+						* docker-compose
+						* swarm
+						* mesos
+						* kubernetes
+                        ---
+						### docker-compose
+						```yaml
+						version: '2.0'
+						  services:
+						  web:
+						    build: .
+						    ports:
+						      - "5000:5000"
+						    volumes:
+						      - .:/code
+						      - logvolume01:/var/log
+						    links:
+						      - redis
+						  redis:
+						    image: redis
+						    volumes:
+						      logvolume01: {}
+						```
+						---
+						### .env file
+						default values for any environment variables used in the Compose file
+						```bash
+						$ cat .env
+						TAG=v1.5
+
+						$ cat docker-compose.yml
+						version: '3'
+						services:
+						web:
+						image: "webapp:${TAG}"
+						```
+					</script>
+				</section>
+
+				<section data-markdown class="center">
+					<script type="text/template">
+						# THANKS
+					</script>
+				</section>
+            </div>
+		</div>
+
+		<script src="../dist/reveal.js"></script>
+        <script src="../plugin/markdown/markdown.js"></script>
+        <script src="../plugin/highlight/highlight.js"></script>
+        <script src="../plugin/notes/notes.js"></script>
+		<script src="../plugin/menu/menu.js"></script>
+
+        <script>
+
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+                mouseWheel: true,
+				notes: true,
+
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMenu ]
+			});
+
+		</script>
+
+	</body>
+</html>
